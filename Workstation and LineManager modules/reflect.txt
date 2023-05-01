@@ -1,0 +1,123 @@
+*****************************************************************************
+                               Reflection
+                                   MS3
+Full Name  : Wai Hing William Tse
+Student ID#: 149 992 216
+
+Authenticity Declaration:
+I declare this submission is the result of my own work and has not been
+shared with any other student or 3rd party content provider. This submitted
+piece of work is entirely of my own creation.
+*****************************************************************************
+The topics I have learned and/or have trouble with from this workshop were:
+
+This project is about order processing streamline in a furniture company. The workflow of the
+processing itself is not overly complicated, yet the requirements/instruction are somewhat hard to
+visualize, and the terms are rather confusing (e.g. station, workstation, nextStation, activeLine, 
+etc).
+
+The basic run-down:
+
+1. setup stations/orders > 
+2. LineManager::run() > 
+3. move pending to orders >
+
+4. CustomerOrder::fillItem() >
+Each station fills ONE item at a time,
+	if the station has it AND in stock> mark filled;
+	if not > proceed to attemptToMoveOrder;
+
+5. Workstation::attemptToMoveOrder() >
+Check if EACH order and its items have been filled OR items are out of stock
+	if true
+		if the current station has a next station > move the order to the next station;
+		if not > check order completion and move the order to the corresponding deques;
+	if false
+		do nothing
+
+6. LineManager::run()
+Check if all orders have been processed
+	if true, display reports;
+	if false, keep looping;
+
+
+*** The troubles ***
+1. STL algorithms, vector/deque, iterator:
+I do not think I have enough practice in using the mentioned techniques comfortably where they are
+heavily required in this project. I had the ideas but the syntax and implementations did not allow me
+to do what I wanted to do. There were many trials and errors in the process, and the slow process was 
+buring my patience during these final weeks when all the big projects from other courses cramp up 
+together in the same week. I did not get to slowly enjoy and learn from this project, but I definitely 
+realized that I need more practice in implementing these techniques to speed up my implementation.
+
+
+
+2. The filling order
+The following output problem caused me some troubles to fix before came up with a solution for it.
+The root cause lies in the CustomerOrder::fillItem() where this function was supposed to deal with one 
+item at a time; yet, for Rania, there were two same items that were both unable to fill, thus the 
+function skipped the second same item. I came up with the solution to double-check in a loop if there 
+were other same items that were unable to fill, then printed that statement according to the sample 
+output. I think there must be another better way to do it, but I couldn't find other ways without 
+breaking my code.
+
+
+My original outputs:
+========================================
+=           Filling Orders             =
+========================================
+Line Manager Iteration: 1
+	//omitted
+Line Manager Iteration: 12
+    Unable to fill Rania A., 2-Room Home Office and Bedroom [Desk]   <---One output
+    Filled Hong H., 1-Room Office [Office Chair]
+
+
+The sample outputs:
+========================================
+=           Filling Orders             =
+========================================
+Line Manager Iteration: 1
+	//omitted
+Line Manager Iteration: 12
+    Unable to fill Rania A., 2-Room Home Office and Bedroom [Desk] <--Two outputs
+    Unable to fill Rania A., 2-Room Home Office and Bedroom [Desk]
+    Filled Hong H., 1-Room Office [Office Chair]
+
+
+
+My solution "*":
+void CustomerOrder::fillItem(Station& station, std::ostream& os)
+{
+	bool haveIt = false;		
+
+	for (size_t i = 0; i < m_cntItem && haveIt == false; i++)
+	{
+		if (m_lstItem[i]->m_itemName == station.getItemName() && !m_lstItem[i]->m_isFilled) // if station has it and order item is unfilled
+		{
+			haveIt = true;
+		}
+
+		if (haveIt)
+		{
+			if (station.getQuantity() > 0)
+			{
+				m_lstItem[i]->m_serialNumber = station.getNextSerialNumber();
+				m_lstItem[i]->m_isFilled = true;
+				station.updateQuantity(); // -1
+				os << "    Filled " << m_name << ", " << m_product << " [" << m_lstItem[i]->m_itemName << "]" << endl;
+			}
+			else
+			{
+				**** To accommodate the case where there are multiple out-of-stock orders for the same item from the same customer (an extra FOR loop)****
+				for (size_t j = 0; j < m_cntItem; j++)
+				{
+					if (m_lstItem[i]->m_itemName == m_lstItem[j]->m_itemName)
+					{
+						os << "    Unable to fill " << m_name << ", " << m_product << " [" << m_lstItem[i]->m_itemName << "]" << endl;
+					}
+				}
+			}
+		}
+	}
+}
