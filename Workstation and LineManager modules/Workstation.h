@@ -1,11 +1,3 @@
-// Name: Wai Hing William Tse
-// Seneca Student ID: 149 992 216
-// Seneca email: wtse11@myseneca.ca
-// Date of completion: 12/3/2022
-//
-// I confirm that I am the only author of this file
-//   and the content was created entirely by me.
-
 #ifndef SDDS_WORKSTATION_H
 #define SDDS_WORKSTATION_H
 #include <iostream>
